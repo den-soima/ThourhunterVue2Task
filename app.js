@@ -21,60 +21,58 @@ function setMerker(x, y) {
 
 mymap.on('click', onMapClick);
 
-class Point {
-    constructor(latitude, magnitude) {
-        this.latitude = latitude;
-        this.magnitude = magnitude;
-    }
+function Point() {
+    this.latitude = mapLatitude + Math.random();
+    this.longitude = mapLongitude + Math.random();
 }
 
-class Leaf {
-    constructor(name, point) {
-        this.name = name;
-        this.point = point;
-        this.selected = false;
-        this.visited = false;
-    }
+function Leaf(name, point) {
+    this.name = name;
+    this.point = point;
+    this.selected = false;
+    this.visited = false;
+
 }
 
-class Branch {
-    constructor(name, scion) {
-        this.name = name;
-        this.scions = scion;
-        this.visible = false;
-        this.type = '';
-        if (scion instanceof Branch) this.type = 'branch';
-        if (scion instanceof Leaf) this.type = 'leaf';
-    }
+function Branch(name, scion) {
+    this.name = name;
+    this.scions = scion;
+    this.visible = false;
+    this.type = '';
+    if (scion instanceof Branch) this.type = 'branch';
+    if (scion instanceof Leaf) this.type = 'leaf';
 }
 
-function createBaseLayer(branches, baseLayerQuantity) {
-    for (let i = 0; i < baseLayerQuantity; i++) {
-        branches.push(new Branch('BaseLayerItem' + 1, []))
-    }
-}
 
-function createScions(branches, branchesQuantity, treeLayer, leafsQuantity) {
-    treeLayer--;
-    if (treeLayer > 1) {
-        for (let i = 0; i < branchesQuantity; i++) {
-            branches[i].scions.push(new Branch('Layer' + treeLayer + ': Item' + branchesQuantity, createScions(branches.scions, branchesQuantity, treeLayer)));
-        }    
-    }
-    else if (treeLayer == 1) {
-        for (let i = 0; i < leafsQuantity; i++) {
-            branches[i].scions.push(new Leaf('Leaf' + leafsQuantity, new Point(mapLatitude + Math.random(), mapLongitude + Math.random())));
-        }            
-    }
-}
-
-class Tree {
-
-    constructor(treeRank, baseLayerQuantity, branchesQuantity, leafsQuantity) {
-        this.branches = [];
-        createBaseLayer(this.branches, baseLayerQuantity);
-        createScions(this.branches, branchesQuantity, treeRank, leafsQuantity);
-    }
+function Tree() {
+    this.branches = [
+        new Branch('Level 1: Branch 1', [
+            new Branch('Level 2: Branch 1', [
+                new Leaf('Level 3: Leaf 1', new Point()),
+                new Leaf('Level 3: Leaf 2', new Point()),
+                new Leaf('Level 3: Leaf 3', new Point())
+            ]),
+            new Branch('Level 2: Branch 2', [
+                new Leaf('Level 3: Leaf 1', new Point()),
+                new Leaf('Level 3: Leaf 2', new Point()),
+                new Leaf('Level 3: Leaf 3', new Point())
+            ])
+        ]),
+        new Branch('Level 1: Branch 2', [
+            new Branch('Level 2: Branch 1', [
+                new Leaf('Level 3: Leaf 1', new Point()),
+                new Leaf('Level 3: Leaf 2', new Point()),
+                new Leaf('Level 3: Leaf 3', new Point())
+            ]),
+            new Branch('Level 2: Branch 2', [
+                new Leaf('Level 3: Leaf 1', new Point()),
+                new Leaf('Level 3: Leaf 2', new Point()),
+                new Leaf('Level 3: Leaf 3', new Point())
+            ])
+        ])
+    ];
+    
+    this.rank = 3
 }
 
 function createTree(ra) {
@@ -105,7 +103,7 @@ function createLayers(treeRank, branchesQuantity) {
 new Vue({
     el: '#tree',
     data: {
-        tree: new Tree(3, 4, 2, 3),
+        tree: new Tree(),
         visitedPoints: null,
         actualPoints: null
     },

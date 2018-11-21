@@ -17,11 +17,11 @@
         <ul>
             <li v-for="branch in tree.branches" :key="branch.id">
                 <span v-on:click="">{{branch.name}}</span>
-                <ul v-if="true">
+                <ul v-if="branch.visible">
                     <li v-for="scion in branch.scions" :key="scion.id">
                         <span v-on:click="">{{scion.name}}</span>
                         <ul v-if="true">
-                            <li v-for="leaf in scions.scions" :key="leaf.id">
+                            <li v-for="leaf in scion.scions" :key="leaf.id">
                                 <span v-on:click="">{{leaf.name}}</span>
                             </li>
                         </ul>
