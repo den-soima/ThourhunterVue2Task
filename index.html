@@ -15,14 +15,14 @@
 <div id="body">
     <div id="tree">
         <ul>
-            <li v-for="level1 in tree" :key="level1.id">
-                <span v-on:click="onTreeClick(level1)">{{level1.name}}</span>
-                <ul v-if="level1.showbranch">
-                    <li v-for="level2 in level1.branch" :key="level2.id">
-                        <span v-on:click="onTreeClick(level2)">{{level2.name}}</span>
-                        <ul v-if="level2.showbranch">
-                            <li v-for="level3 in level2.branch" :key="level3.id">
-                                <span v-on:click="onTreeClick(level3)">{{level3.name}}</span>
+            <li v-for="branch in tree.branches" :key="branch.id">
+                <span v-on:click="">{{branch.name}}</span>
+                <ul v-if="true">
+                    <li v-for="scion in branch.scions" :key="scion.id">
+                        <span v-on:click="">{{scion.name}}</span>
+                        <ul v-if="true">
+                            <li v-for="leaf in scions.scions" :key="leaf.id">
+                                <span v-on:click="">{{leaf.name}}</span>
                             </li>
                         </ul>
                     </li>
