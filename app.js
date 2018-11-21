@@ -46,43 +46,34 @@ class Branch {
         if (scion instanceof Branch) this.type = 'branch';
         if (scion instanceof Leaf) this.type = 'leaf';
     }
+}
 
-    
+function createBaseLayer(branches, baseLayerQuantity) {
+    for (let i = 0; i < baseLayerQuantity; i++) {
+        branches.push(new Branch('BaseLayerItem' + 1, []))
+    }
+}
+
+function createScions(branches, branchesQuantity, treeLayer, leafsQuantity) {
+    treeLayer--;
+    if (treeLayer > 1) {
+        for (let i = 0; i < branchesQuantity; i++) {
+            branches[i].scions.push(new Branch('Layer' + treeLayer + ': Item' + branchesQuantity, createScions(branches.scions, branchesQuantity, treeLayer)));
+        }    
+    }
+    else if (treeLayer == 1) {
+        for (let i = 0; i < leafsQuantity; i++) {
+            branches[i].scions.push(new Leaf('Leaf' + leafsQuantity, new Point(mapLatitude + Math.random(), mapLongitude + Math.random())));
+        }            
+    }
 }
 
 class Tree {
 
     constructor(treeRank, baseLayerQuantity, branchesQuantity, leafsQuantity) {
         this.branches = [];
-        #createBaseLayer(this.branches, baseLayerQuantity);
-        #createScions(this.branches, branchesQuantity, treeRank, leafsQuantity);
-
-    }
-
-    #createBaseLayer(branches, baseLayerQuantity) {
-        for (let i = 0; i < baseLayerQuantity; i++) {
-            branches.push(new Branch('BaseLayerItem' + 1, {}))
-        }
-    }
-
-    #createScions(branches, branchesQuantity, treeLayer, leafsQuantity) {
-        treeLayer--;
-        if (treeLayer > 1) {
-            do {
-                branches.scions.push(new Branch('Layer' + treeLayer + ': Item' + branchesQuantity, #createScions(branches.scions, branchesQuantity, treeLayer)));
-                branchesQuantity--;
-            } while (branchesQuantity > 0)
-        }
-        else if (treeLayer == 1) {
-            do {
-                branches.scions.push(new Leaf('Leaf' + leafsQuantity, new Point(mapLatitude + Math.random(), mapLongitude + Math.random())));
-                leafsQuantity--;
-            } while (leafsQuantity > 0)
-        }
-    }
-
-    #collectLeafs(branches) {
-
+        createBaseLayer(this.branches, baseLayerQuantity);
+        createScions(this.branches, branchesQuantity, treeRank, leafsQuantity);
     }
 }
 
@@ -111,8 +102,6 @@ function createLayers(treeRank, branchesQuantity) {
 }
 
 
-
-
 new Vue({
     el: '#tree',
     data: {
@@ -120,9 +109,7 @@ new Vue({
         visitedPoints: null,
         actualPoints: null
     },
-    methods: {
-       
-    }
+    methods: {}
 });
 
 new Vue({
