@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tourhunter task</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+          integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+          crossorigin=""/>
+</head>
+<body>
+<div id="header">
+    <h2>TourHunter task</h2>    
+</div>
+<div id="body">
+    <div id="tree">
+        <ul>
+            <li v-for="level1 in tree" :key="level1.id">
+                <span v-on:click="onTreeClick(level1)">{{level1.name}}</span>
+                <ul v-if="level1.showbranch">
+                    <li v-for="level2 in level1.branch" :key="level2.id">
+                        <span v-on:click="onTreeClick(level2)">{{level2.name}}</span>
+                        <ul v-if="level2.showbranch">
+                            <li v-for="level3 in level2.branch" :key="level3.id">
+                                <span v-on:click="onTreeClick(level3)">{{level3.name}}</span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div id="map">        
+        <div id="leaflet"></div>
+    </div>
+    <div id="list">
+        {{message}}
+    </div>
+</div>
+<div id="footer">
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+        integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+        crossorigin=""></script>
+<script src="app.js"></script>
+</body>
+</html>

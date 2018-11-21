@@ -1,0 +1,50 @@
+html, body {
+
+}
+
+#header {
+    text-align: center;
+}
+
+#body {
+    display: table;
+    width: 100%;
+}
+
+#tree, #map, #list {
+    display: table-cell;
+    height: 500px;
+    vertical-align: top;
+}
+
+#tree {
+    width: 300px; 
+}
+
+span {
+    display: block;
+}
+span:hover {
+    background-color: mediumspringgreen;
+}
+
+#map {
+
+}
+
+#list {
+    width: 300px;
+}
+
+#leaflet {
+    height: 400px;
+}
+
+.tree {
+    background-color: lightpink;
+    float: left;
+    height: 100%;
+    width: 30%;
+}
+
+
