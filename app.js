@@ -31,7 +31,6 @@ function Leaf(name, point) {
     this.point = point;
     this.selected = false;
     this.visited = false;
-
 }
 
 function Branch(name, scion) {
@@ -42,37 +41,33 @@ function Branch(name, scion) {
     if (scion instanceof Branch) this.type = 'branch';
     if (scion instanceof Leaf) this.type = 'leaf';
 }
-
-
-function Tree() {
-    this.branches = [
-        new Branch('Level 1: Branch 1', [
-            new Branch('Level 2: Branch 1', [
-                new Leaf('Level 3: Leaf 1', new Point()),
-                new Leaf('Level 3: Leaf 2', new Point()),
-                new Leaf('Level 3: Leaf 3', new Point())
-            ]),
-            new Branch('Level 2: Branch 2', [
-                new Leaf('Level 3: Leaf 1', new Point()),
-                new Leaf('Level 3: Leaf 2', new Point()),
-                new Leaf('Level 3: Leaf 3', new Point())
-            ])
-        ]),
-        new Branch('Level 1: Branch 2', [
-            new Branch('Level 2: Branch 1', [
-                new Leaf('Level 3: Leaf 1', new Point()),
-                new Leaf('Level 3: Leaf 2', new Point()),
-                new Leaf('Level 3: Leaf 3', new Point())
-            ]),
-            new Branch('Level 2: Branch 2', [
-                new Leaf('Level 3: Leaf 1', new Point()),
-                new Leaf('Level 3: Leaf 2', new Point()),
-                new Leaf('Level 3: Leaf 3', new Point())
-            ])
-        ])
-    ];
+//TODO: Send array like parameter to createLayer
+function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity) {
+    this.branches = createLayer(baseLayerQuantity, 'branch');
     
-    this.rank = 3
+    this.rank = rank;
+    function createLayer(quantity, layerType) {
+        let arr = [];
+        rank--;
+        if (rank >= 0){
+            
+            switch (layerType) {
+                case 'branch': {
+                    for (let i = 0; i < quantity; i++) {
+                        arr[i] = new Branch('Branch ' + i, createLayer(branchesQuantity, 'branch'))
+                    }
+                    break;
+                }
+                case 'leaf': {
+                    for (let i = 0; i < leafsQuantity; i++) {
+                        arr[i] = new Leaf('Leaf ' + i, new Point(mapLatitude + Math.random(), mapLongitude + Math.random()))
+                    }
+                    break;
+                }
+            }
+        }         
+        return arr;
+    }
 }
 
 function createTree(ra) {
@@ -103,7 +98,7 @@ function createLayers(treeRank, branchesQuantity) {
 new Vue({
     el: '#tree',
     data: {
-        tree: new Tree(),
+        tree: new Tree(3, 5, 2, 3),
         visitedPoints: null,
         actualPoints: null
     },
