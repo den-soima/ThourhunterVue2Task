@@ -17,7 +17,7 @@
         <ul>
             <li v-for="branch in tree.branches" :key="branch.id">
                 <span v-on:click="">{{branch.name}}</span>
-                <ul v-if="true">
+                <ul v-if="branch.visible">
                     <li v-for="scion in branch.scions" :key="scion.id">
                         <span v-on:click="">{{scion.name}}</span>
                         <ul v-if="true">
