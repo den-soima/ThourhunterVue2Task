@@ -36,7 +36,7 @@ function Leaf(name, point) {
 function Branch(name, scions) {
     this.name = name;
     this.scions = scions;
-    this.visible = false;
+    this.expand = true;
     this.type = scions[0] instanceof Branch ? 'branch' : 'leaf';
 }
 
@@ -95,19 +95,25 @@ function createLayers(treeRank, branchesQuantity) {
 new Vue({
     el: '#tree',
     data: {
-        treeRank: 3,
-        baseLayerQuantity: 2,
-        branchLayerQuantity: 2,
-        leafLayerQuantity: 2,
+        tree : new Tree(3,2,2,2),        
         visitedPoints: null,
         actualPoints: null
-    },
-    computed: {
-        tree: function () {
-            return new Tree(this.treeRank, this.baseLayerQuantity, this.branchLayerQuantity, this.leafLayerQuantity)
+    },    
+    methods: {
+        expandScions: function (scion) {
+            scion.expand = !scion.expand;
+            if (scion.type =='branch'){
+                for(let sc of scion.scions) {
+
+                    sc.expand = !sc.expand;
+                    this.expandScions(sc);
+                }
+            }     
+            else if(scion.type =='branch'){
+                scion.selected = true;
+            }  
         }
-    },
-    methods: {}
+    }
 });
 
 new Vue({

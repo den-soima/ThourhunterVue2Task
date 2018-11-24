@@ -12,27 +12,15 @@
 <div id="header">
     <h2>TourHunter task :</h2>
 </div>
-<div id="settings">
-    <p>Settings: </p>
-    <label for="input-treerank">tree rank </label>
-    <input type="number" id="input-treerank" readonly>
-    <label for="input-baselayerqnt">base layer quantity</label>
-    <input type="number" id="input-baselayerqnt">
-    <label for="input-branchlayerqnt">branch quantity </label>
-    <input type="number"  id="input-branchlayerqnt">
-    <label for="input-leaflayerqnt">leaf quantity </label>
-    <input type="number" id="input-leaflayerqnt">
-    <button onclick="">Apply</button>
-</div>
 <div id="body">
     <div id="tree">
         <ul>
             <li v-for="branch in tree.branches" :key="branch.id">
-                <span v-on:click="">{{branch.name}}</span>
-                <ul v-if="true">
+                <span v-on:click="expandScions(branch)">{{branch.name}}</span>
+                <ul v-if="branch.expand">
                     <li v-for="scion in branch.scions" :key="scion.id">
-                        <span v-on:click="">{{scion.name}}</span>
-                        <ul v-if="true">
+                        <span v-on:click="expandScions(scion)">{{scion.name}}</span>
+                        <ul v-if="scion.expand">
                             <li v-for="leaf in scion.scions" :key="leaf.id">
                                 <span v-on:click="">{{leaf.name}}</span>
                             </li>
