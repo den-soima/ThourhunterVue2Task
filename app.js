@@ -33,39 +33,37 @@ function Leaf(name, point) {
     this.visited = false;
 }
 
-function Branch(name, scion) {
+function Branch(name, scions) {
     this.name = name;
-    this.scions = scion;
+    this.scions = scions;
     this.visible = false;
-    this.type = '';
-    if (scion instanceof Branch) this.type = 'branch';
-    if (scion instanceof Leaf) this.type = 'leaf';
+    this.type = scions[0] instanceof Branch ? 'branch' : 'leaf';
 }
+
 //TODO: Send array like parameter to createLayer
 function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity) {
-    this.branches = createLayer(baseLayerQuantity, 'branch');
-    
+    this.branches = createLayer(rank, baseLayerQuantity, 'branch');
+
     this.rank = rank;
-    function createLayer(quantity, layerType) {
+
+    function createLayer(rank, quantity, layerType) {
         let arr = [];
-        rank--;
-        if (rank >= 0){
-            
+        if (rank > 0) {
             switch (layerType) {
                 case 'branch': {
                     for (let i = 0; i < quantity; i++) {
-                        arr[i] = new Branch('Branch ' + i, createLayer(branchesQuantity, 'branch'))
+                        arr[i] = new Branch('branch ' + i, createLayer(rank - 1, branchesQuantity, rank > 2 ? 'branch' : 'leaf'))
                     }
                     break;
                 }
                 case 'leaf': {
                     for (let i = 0; i < leafsQuantity; i++) {
-                        arr[i] = new Leaf('Leaf ' + i, new Point(mapLatitude + Math.random(), mapLongitude + Math.random()))
+                        arr[i] = new Leaf('leaf ' + i, new Point(mapLatitude + Math.random(), mapLongitude + Math.random()))
                     }
                     break;
                 }
             }
-        }         
+        }
         return arr;
     }
 }
@@ -94,13 +92,20 @@ function createLayers(treeRank, branchesQuantity) {
     return tree;
 }
 
-
 new Vue({
     el: '#tree',
     data: {
-        tree: new Tree(3, 5, 2, 3),
+        treeRank: 3,
+        baseLayerQuantity: 2,
+        branchLayerQuantity: 2,
+        leafLayerQuantity: 2,
         visitedPoints: null,
         actualPoints: null
+    },
+    computed: {
+        tree: function () {
+            return new Tree(this.treeRank, this.baseLayerQuantity, this.branchLayerQuantity, this.leafLayerQuantity)
+        }
     },
     methods: {}
 });
@@ -124,6 +129,10 @@ new Vue({
         message: 'List component'
     }
 });
+
+
+
+
 
 
 
