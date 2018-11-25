@@ -47,4 +47,8 @@ span:hover {
     width: 30%;
 }
 
+.selected{
+    background-color: lightblue;
+}
+
 

@@ -1,6 +1,6 @@
 const mapLatitude = 50.44;
 const mapLongitude = 30.52;
-const mapZoom = 13;
+const mapZoom = 14;
 
 function Marker(latitude, longitude) {
     this.latitude = latitude;
@@ -25,6 +25,29 @@ function Branch(name, scions) {
 function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity, markersQuantity) {
     this.branches = createLayer(rank, baseLayerQuantity, 'branch');
     this.rank = rank;
+    this.getLeafs = function (scion) {
+        let arr = [];
+        
+        if (scion instanceof Leaf) 
+            return arr.push(scion);
+
+        leafsPerLayer(scion);
+        
+        function leafsPerLayer(scion) {
+            if (scion.type == 'branch') {
+                for (let sc of scion.scions) {
+                    leafsPerLayer(sc)
+                }
+            }
+            else if (scion.type == 'leaf') {
+                for (let leaf of scion.scions) {
+                    arr.push(leaf)
+                }
+            }
+        }
+
+        return arr;
+    };
 
     function createLayer(rank, quantity, layerType) {
         let arr = [];
@@ -54,26 +77,6 @@ function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity, markersQ
         }
         return arr
     }
-
-    for (let branch of this.branches) {
-        branch.markers = recollectMarkers(branch);
-    }
-
-    function recollectMarkers(scion) {
-        let arr = [];
-        if (scion.type == 'branch') {
-            for (let sc of scion.scions) {
-                sc.markers = recollectMarkers(sc);
-                arr.push(...sc.markers);
-            }
-        }
-        else if (scion.type == 'leaf') {
-            for (let leaf of scion.scions) {
-                arr.push(...leaf.markers)
-            }
-        }
-        return arr;
-    }
 }
 
 function LeafletMap(tagId) {
@@ -86,9 +89,18 @@ function LeafletMap(tagId) {
         accessToken: 'pk.eyJ1IjoiZHNvZGV2IiwiYSI6ImNqb2x4OGxvdDBzcGczcW8xcnZqNTluZ2sifQ.4bPA6D82r9BY7npD5jPGRw'
     }).addTo(this.map);
 
+    this.markers = [];
+
     this.setMarker = function (latitude, longitude) {
-        L.marker([latitude, longitude]).addTo(this.map);
-    }
+        let m = L.marker([latitude, longitude]).addTo(this.map);
+        this.markers.push(m);
+    };
+
+    this.clearMap = function () {
+        for (let marker of this.markers) {
+            this.map.removeLayer(marker)
+        }
+    };
 }
 
 const EventBus = new Vue();
@@ -96,14 +108,15 @@ const EventBus = new Vue();
 new Vue({
     el: '#tree',
     data: {
-        tree: new Tree(3, 2, 2, 2, 2),
-        visitedPoints: null,
-        actualPoints: null
+        tree: new Tree(3, 2, 2, 2, 1),
+        visitedLeafs: new Set(),
+        selectedLeafs: []
     },
     methods: {
         expandScions: function (scion) {
             return;
             scion.expand = !scion.expand;
+            
             if (scion.type == 'branch') {
                 for (let sc of scion.scions) {
 
@@ -115,8 +128,18 @@ new Vue({
                 scion.selected = true;
             }
         },
-        mapPoint: function (leaf) {
-            EventBus.$emit('set-markers-on-map', [leaf.marker]);
+        pinMarker: function (scion) {
+            this.selectedLeafs = this.tree.getLeafs(scion); 
+            let markers = [];
+            
+            for (let leaf of this.selectedLeafs){
+                leaf.selected = true;
+                leaf.visited = true;
+                this.visitedLeafs.add(leaf);                
+                markers.push(...leaf.markers)
+            } 
+            
+            EventBus.$emit('set-markers-on-map', markers);
         }
 
     }
@@ -126,7 +149,7 @@ new Vue({
     el: '#map',
     data: {
         leaflet: {},
-        points: []
+        markers: []
     },
     methods: {
         onMapClick: function (e) {
@@ -143,6 +166,9 @@ new Vue({
         this.leaflet.map.on('click', this.onMapClick);
 
         EventBus.$on('set-markers-on-map', (markers) => {
+
+            this.leaflet.clearMap();
+
             for (let marker of markers) {
                 this.leaflet.setMarker(marker.latitude, marker.longitude)
             }

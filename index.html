@@ -16,13 +16,15 @@
     <div id="tree">
         <ul>
             <li v-for="branch in tree.branches" :key="branch.id">
-                <span v-on:click="expandScions(branch)">{{branch.name}}</span>
+                <span v-on:click="pinMarker(branch)">{{branch.name}}</span>
                 <ul v-if="branch.expand">
                     <li v-for="scion in branch.scions" :key="scion.id">
-                        <span v-on:click="expandScions(scion)">{{scion.name}}</span>
+                        <span v-on:click="pinMarker(scion)">{{scion.name}}</span>
                         <ul v-if="scion.expand">
                             <li v-for="leaf in scion.scions" :key="leaf.id">
-                                <span v-on:click="mapPoint(leaf)">{{leaf.name}}</span>
+                                <span v-on:click="pinMarker(leaf)" 
+                                      v-bind:class="{selected: leaf.selected, 'visited' : leaf.visited && !leaf.selected}">{{leaf
+                                    .name}}</span>
                             </li>
                         </ul>
                     </li>
