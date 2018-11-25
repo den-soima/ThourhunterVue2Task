@@ -1,34 +1,15 @@
-let mapLatitude = 50.44;
-let mapLongitude = 30.52;
-let mapZoom = 13;
+const mapLatitude = 50.44;
+const mapLongitude = 30.52;
+const mapZoom = 13;
 
-let mymap = L.map('leaflet').setView([mapLatitude, mapLongitude], mapZoom);
-
-L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-    maxZoom: 18,
-    id: 'mapbox.streets',
-    accessToken: 'pk.eyJ1IjoiZHNvZGV2IiwiYSI6ImNqb2x4OGxvdDBzcGczcW8xcnZqNTluZ2sifQ.4bPA6D82r9BY7npD5jPGRw'
-}).addTo(mymap);
-
-function onMapClick(e) {
-    alert("You clicked the map at " + e.latlng);
+function Marker(latitude, longitude) {
+    this.latitude = latitude;
+    this.longitude = longitude;
 }
 
-function setMerker(x, y) {
-    L.marker([51.5, -0.15]).addTo(mymap);
-}
-
-mymap.on('click', onMapClick);
-
-function Point() {
-    this.latitude = mapLatitude + Math.random();
-    this.longitude = mapLongitude + Math.random();
-}
-
-function Leaf(name, point) {
+function Leaf(name, markers) {
     this.name = name;
-    this.point = point;
+    this.markers = markers;
     this.selected = false;
     this.visited = false;
 }
@@ -38,12 +19,11 @@ function Branch(name, scions) {
     this.scions = scions;
     this.expand = true;
     this.type = scions[0] instanceof Branch ? 'branch' : 'leaf';
+    this.leafs = [];
 }
 
-//TODO: Send array like parameter to createLayer
-function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity) {
+function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity, markersQuantity) {
     this.branches = createLayer(rank, baseLayerQuantity, 'branch');
-
     this.rank = rank;
 
     function createLayer(rank, quantity, layerType) {
@@ -58,7 +38,7 @@ function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity) {
                 }
                 case 'leaf': {
                     for (let i = 0; i < leafsQuantity; i++) {
-                        arr[i] = new Leaf('leaf ' + i, new Point(mapLatitude + Math.random(), mapLongitude + Math.random()))
+                        arr[i] = new Leaf('leaf ' + i, createMarkers())
                     }
                     break;
                 }
@@ -66,66 +46,108 @@ function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity) {
         }
         return arr;
     }
-}
 
-function createTree(ra) {
-    let treeRank = 3;
-
-    return createLayers(treeRank, 3);
-}
-
-function createLayers(treeRank, branchesQuantity) {
-    treeRank--;
-    let tree = new Array(branchesQuantity);
-    for (let i = 0; i < branchesQuantity; i++) {
-        let branch = {};
-        branch.name = `Item ${i + 1}`;
-        branch.rank = treeRank;
-        branch.showbranch = false;
-        branch.branch = treeRank > 0 ? createLayers(treeRank, 2) : {
-            latitude: mapLatitude + Math.random(),
-            longitude: mapLongitude + Math.random(),
-            selected: false
-        };
-        tree[i] = branch;
+    function createMarkers() {
+        let arr = [];
+        for (let i = 0; i < markersQuantity; i++) {
+            arr[i] = new Marker(mapLatitude + Math.random() / 100, mapLongitude + Math.random() / 100)
+        }
+        return arr
     }
-    return tree;
+
+    for (let branch of this.branches) {
+        branch.markers = recollectMarkers(branch);
+    }
+
+    function recollectMarkers(scion) {
+        let arr = [];
+        if (scion.type == 'branch') {
+            for (let sc of scion.scions) {
+                sc.markers = recollectMarkers(sc);
+                arr.push(...sc.markers);
+            }
+        }
+        else if (scion.type == 'leaf') {
+            for (let leaf of scion.scions) {
+                arr.push(...leaf.markers)
+            }
+        }
+        return arr;
+    }
 }
+
+function LeafletMap(tagId) {
+    this.map = L.map(tagId).setView([mapLatitude, mapLongitude], mapZoom);
+
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox.streets',
+        accessToken: 'pk.eyJ1IjoiZHNvZGV2IiwiYSI6ImNqb2x4OGxvdDBzcGczcW8xcnZqNTluZ2sifQ.4bPA6D82r9BY7npD5jPGRw'
+    }).addTo(this.map);
+
+    this.setMarker = function (latitude, longitude) {
+        L.marker([latitude, longitude]).addTo(this.map);
+    }
+}
+
+const EventBus = new Vue();
 
 new Vue({
     el: '#tree',
     data: {
-        tree : new Tree(3,2,2,2),        
+        tree: new Tree(3, 2, 2, 2, 2),
         visitedPoints: null,
         actualPoints: null
-    },    
+    },
     methods: {
         expandScions: function (scion) {
+            return;
             scion.expand = !scion.expand;
-            if (scion.type =='branch'){
-                for(let sc of scion.scions) {
+            if (scion.type == 'branch') {
+                for (let sc of scion.scions) {
 
                     sc.expand = !sc.expand;
                     this.expandScions(sc);
                 }
-            }     
-            else if(scion.type =='branch'){
+            }
+            else if (scion.type == 'branch') {
                 scion.selected = true;
-            }  
+            }
+        },
+        mapPoint: function (leaf) {
+            EventBus.$emit('set-markers-on-map', [leaf.marker]);
         }
+
     }
 });
 
 new Vue({
     el: '#map',
-    data: {},
+    data: {
+        leaflet: {},
+        points: []
+    },
     methods: {
-        setMarker: function (e) {
-
+        onMapClick: function (e) {
+            alert("You clicked the map at " + e.latlng);
         },
-        getLeafs: function () {
+    },
+    mounted() {
 
-        }
+        this.leaflet = new LeafletMap('leaflet');
+
+        //console.log(this.leaflet.setMarker());
+
+        //this.leaflet.setMarker(mapLatitude, mapLongitude);
+        this.leaflet.map.on('click', this.onMapClick);
+
+        EventBus.$on('set-markers-on-map', (markers) => {
+            for (let marker of markers) {
+                this.leaflet.setMarker(marker.latitude, marker.longitude)
+            }
+        })
+
     }
 });
 
@@ -135,6 +157,7 @@ new Vue({
         message: 'List component'
     }
 });
+
 
 
 
