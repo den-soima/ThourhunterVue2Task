@@ -28,11 +28,15 @@ function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity, markersQ
     this.getLeafs = function (scion) {
         let arr = [];
         
-        if (scion instanceof Leaf) 
-            return arr.push(scion);
+        if (scion instanceof Leaf) {
+            arr[0] = scion;
+        }
+        else {
+            leafsPerLayer(scion);
+        }
 
-        leafsPerLayer(scion);
-        
+        return arr;
+
         function leafsPerLayer(scion) {
             if (scion.type == 'branch') {
                 for (let sc of scion.scions) {
@@ -45,8 +49,6 @@ function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity, markersQ
                 }
             }
         }
-
-        return arr;
     };
 
     function createLayer(rank, quantity, layerType) {
@@ -91,9 +93,11 @@ function LeafletMap(tagId) {
 
     this.markers = [];
 
-    this.setMarker = function (latitude, longitude) {
-        let m = L.marker([latitude, longitude]).addTo(this.map);
-        this.markers.push(m);
+    this.setMarkers = function (markers) {
+        for(let marker of markers) {
+           let m = L.marker([marker.latitude, marker.longitude]).addTo(this.map);
+           this.markers.push(m);
+        }
     };
 
     this.clearMap = function () {
@@ -129,6 +133,11 @@ new Vue({
             }
         },
         pinMarker: function (scion) {
+
+            for (let leaf of this.selectedLeafs){
+                leaf.selected = false;
+            }
+
             this.selectedLeafs = this.tree.getLeafs(scion); 
             let markers = [];
             
@@ -160,18 +169,14 @@ new Vue({
 
         this.leaflet = new LeafletMap('leaflet');
 
-        //console.log(this.leaflet.setMarker());
+        //console.log(this.leaflet.setMarkers());
 
-        //this.leaflet.setMarker(mapLatitude, mapLongitude);
+        //this.leaflet.setMarkers(mapLatitude, mapLongitude);
         this.leaflet.map.on('click', this.onMapClick);
 
         EventBus.$on('set-markers-on-map', (markers) => {
-
             this.leaflet.clearMap();
-
-            for (let marker of markers) {
-                this.leaflet.setMarker(marker.latitude, marker.longitude)
-            }
+            this.leaflet.setMarkers(markers)
         })
 
     }
