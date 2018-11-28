@@ -36,7 +36,12 @@
         <div id="leaflet"></div>
     </div>
     <div id="list">
-        {{message}}
+        <ul>
+            <li v-for="marker in listOfMarkers" :key="marker.id">
+                {{marker}}
+                <span v-on:click="deleteMarker(marker)" class="delete-button">Delete</span>
+            </li>
+        </ul>
     </div>
 </div>
 <div id="footer">

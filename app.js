@@ -96,6 +96,9 @@ function LeafletMap(tagId) {
     this.setMarkers = function (markers) {
         for(let marker of markers) {
            let m = L.marker([marker.latitude, marker.longitude]).addTo(this.map);
+           m.on('mouseover', () => {
+               EventBus.$emit('marker-mouse-over', marker)
+           });
            this.markers.push(m);
         }
     };
@@ -112,7 +115,7 @@ const EventBus = new Vue();
 new Vue({
     el: '#tree',
     data: {
-        tree: new Tree(3, 2, 2, 2, 1),
+        tree: new Tree(3, 2, 3, 2, 1),
         visitedLeafs: new Set(),
         selectedLeafs: []
     },
@@ -185,7 +188,17 @@ new Vue({
 new Vue({
     el: '#list',
     data: {
-        message: 'List component'
+        listOfMarkers: []
+    },
+    methods:{
+      deleteMarker: function (marker) {
+          this.listOfMarkers.splice(this.listOfMarkers.indexOf(marker), 1)
+      }  
+    },
+    mounted(){
+        EventBus.$on('marker-mouse-over', (marker) =>{
+            this.listOfMarkers.push(marker)
+        })
     }
 });
 

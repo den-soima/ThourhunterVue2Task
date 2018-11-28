@@ -49,6 +49,11 @@ span:hover {
 
 .selected{
     background-color: lightblue;
+    font-weight: bold;
+}
+
+.visited{
+    font-weight: bold;
 }
 
 
