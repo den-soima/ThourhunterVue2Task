@@ -87,14 +87,11 @@ function LeafletMap(tagId) {
             let m = L.marker([marker.latitude, marker.longitude]).addTo(this.map);
             m.on('mouseover', () => {
                 EventBus.$emit('marker-mouse-over', marker);
-                this.removeMarker(m);
+                
+                this.map.removeLayer(m)
             });
         }
     };
-
-    this.removeMarker = function (marker) {
-        this.map.removeLayer(marker)
-    }
 }
 
 const EventBus = new Vue();
@@ -108,41 +105,44 @@ new Vue({
     methods: {
         pinMarker: function (scion) {
             let selectedLeafs = this.tree.getLeafs(scion);
-            
-            for (let leaf of this.visitedLeafs){
+
+            for (let leaf of this.visitedLeafs) {
                 leaf.selected = false;
             }
             let markers = [];
             for (let leaf of selectedLeafs) {
                 let index = this.visitedLeafs.indexOf(leaf);
-                if(index == -1){
+                if (index == -1) {
                     leaf.visited = true;
                     leaf.selected = true;
                     this.visitedLeafs.push(leaf);
                     markers.push(leaf.marker);
                 }
-                else{
+                else {
                     this.visitedLeafs[index].selected = true;
                 }
             }
-            
-            
+
+
             EventBus.$emit('set-markers-on-map', markers);
         }
     },
     mounted() {
         EventBus.$on('delete-from-list', (marker) => {
-
+            let indexToRemove = -1;
             for (let leaf of this.visitedLeafs) {
                 if (leaf.marker == marker) {
                     if (leaf.selected == true) {
                         EventBus.$emit('set-markers-on-map', new Array(marker));
                     }
-                }
-                else {
-                    leaf.visited = false;
+                    else {
+                        leaf.visited = false;
+                        indexToRemove = this.visitedLeafs.indexOf(leaf);
+                    }
                 }
             }
+            if (indexToRemove >= 0)
+                this.visitedLeafs.splice(indexToRemove, 1);
         });
     }
 });
