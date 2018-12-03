@@ -7,9 +7,9 @@ function Marker(latitude, longitude) {
     this.longitude = longitude;
 }
 
-function Leaf(name, markers) {
+function Leaf(name, marker) {
     this.name = name;
-    this.markers = markers;
+    this.marker = marker;
     this.selected = false;
     this.visited = false;
 }
@@ -19,15 +19,14 @@ function Branch(name, scions) {
     this.scions = scions;
     this.expand = true;
     this.type = scions[0] instanceof Branch ? 'branch' : 'leaf';
-    this.leafs = [];
 }
 
-function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity, markersQuantity) {
+function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity) {
     this.branches = createLayer(rank, baseLayerQuantity, 'branch');
     this.rank = rank;
     this.getLeafs = function (scion) {
         let arr = [];
-        
+
         if (scion instanceof Leaf) {
             arr[0] = scion;
         }
@@ -63,21 +62,13 @@ function Tree(rank, baseLayerQuantity, branchesQuantity, leafsQuantity, markersQ
                 }
                 case 'leaf': {
                     for (let i = 0; i < leafsQuantity; i++) {
-                        arr[i] = new Leaf('leaf ' + i, createMarkers())
+                        arr[i] = new Leaf('leaf ' + i, new Marker(mapLatitude + Math.random() / 100, mapLongitude + Math.random() / 100))
                     }
                     break;
                 }
             }
         }
         return arr;
-    }
-
-    function createMarkers() {
-        let arr = [];
-        for (let i = 0; i < markersQuantity; i++) {
-            arr[i] = new Marker(mapLatitude + Math.random() / 100, mapLongitude + Math.random() / 100)
-        }
-        return arr
     }
 }
 
@@ -91,23 +82,19 @@ function LeafletMap(tagId) {
         accessToken: 'pk.eyJ1IjoiZHNvZGV2IiwiYSI6ImNqb2x4OGxvdDBzcGczcW8xcnZqNTluZ2sifQ.4bPA6D82r9BY7npD5jPGRw'
     }).addTo(this.map);
 
-    this.markers = [];
-
     this.setMarkers = function (markers) {
-        for(let marker of markers) {
-           let m = L.marker([marker.latitude, marker.longitude]).addTo(this.map);
-           m.on('mouseover', () => {
-               EventBus.$emit('marker-mouse-over', marker)
-           });
-           this.markers.push(m);
+        for (let marker of markers) {
+            let m = L.marker([marker.latitude, marker.longitude]).addTo(this.map);
+            m.on('mouseover', () => {
+                EventBus.$emit('marker-mouse-over', marker);
+                this.removeMarker(m);
+            });
         }
     };
 
-    this.clearMap = function () {
-        for (let marker of this.markers) {
-            this.map.removeLayer(marker)
-        }
-    };
+    this.removeMarker = function (marker) {
+        this.map.removeLayer(marker)
+    }
 }
 
 const EventBus = new Vue();
@@ -115,45 +102,48 @@ const EventBus = new Vue();
 new Vue({
     el: '#tree',
     data: {
-        tree: new Tree(3, 2, 3, 2, 1),
-        visitedLeafs: new Set(),
-        selectedLeafs: []
+        tree: new Tree(3, 2, 3, 2),
+        visitedLeafs: []
     },
     methods: {
-        expandScions: function (scion) {
-            return;
-            scion.expand = !scion.expand;
-            
-            if (scion.type == 'branch') {
-                for (let sc of scion.scions) {
-
-                    sc.expand = !sc.expand;
-                    this.expandScions(sc);
-                }
-            }
-            else if (scion.type == 'branch') {
-                scion.selected = true;
-            }
-        },
         pinMarker: function (scion) {
-
-            for (let leaf of this.selectedLeafs){
+            let selectedLeafs = this.tree.getLeafs(scion);
+            
+            for (let leaf of this.visitedLeafs){
                 leaf.selected = false;
             }
-
-            this.selectedLeafs = this.tree.getLeafs(scion); 
             let markers = [];
+            for (let leaf of selectedLeafs) {
+                let index = this.visitedLeafs.indexOf(leaf);
+                if(index == -1){
+                    leaf.visited = true;
+                    leaf.selected = true;
+                    this.visitedLeafs.push(leaf);
+                    markers.push(leaf.marker);
+                }
+                else{
+                    this.visitedLeafs[index].selected = true;
+                }
+            }
             
-            for (let leaf of this.selectedLeafs){
-                leaf.selected = true;
-                leaf.visited = true;
-                this.visitedLeafs.add(leaf);                
-                markers.push(...leaf.markers)
-            } 
             
             EventBus.$emit('set-markers-on-map', markers);
         }
+    },
+    mounted() {
+        EventBus.$on('delete-from-list', (marker) => {
 
+            for (let leaf of this.visitedLeafs) {
+                if (leaf.marker == marker) {
+                    if (leaf.selected == true) {
+                        EventBus.$emit('set-markers-on-map', new Array(marker));
+                    }
+                }
+                else {
+                    leaf.visited = false;
+                }
+            }
+        });
     }
 });
 
@@ -163,25 +153,14 @@ new Vue({
         leaflet: {},
         markers: []
     },
-    methods: {
-        onMapClick: function (e) {
-            alert("You clicked the map at " + e.latlng);
-        },
-    },
+    methods: {},
     mounted() {
-
         this.leaflet = new LeafletMap('leaflet');
 
-        //console.log(this.leaflet.setMarkers());
-
-        //this.leaflet.setMarkers(mapLatitude, mapLongitude);
-        this.leaflet.map.on('click', this.onMapClick);
-
         EventBus.$on('set-markers-on-map', (markers) => {
-            this.leaflet.clearMap();
+            //this.leaflet.clearMap();
             this.leaflet.setMarkers(markers)
         })
-
     }
 });
 
@@ -190,14 +169,15 @@ new Vue({
     data: {
         listOfMarkers: []
     },
-    methods:{
-      deleteMarker: function (marker) {
-          this.listOfMarkers.splice(this.listOfMarkers.indexOf(marker), 1)
-      }  
+    methods: {
+        deleteMarker: function (marker) {
+            this.listOfMarkers.splice(this.listOfMarkers.indexOf(marker), 1);
+            EventBus.$emit('delete-from-list', marker);
+        },
     },
-    mounted(){
-        EventBus.$on('marker-mouse-over', (marker) =>{
-            this.listOfMarkers.push(marker)
+    mounted() {
+        EventBus.$on('marker-mouse-over', (marker) => {
+            this.listOfMarkers.push(marker);
         })
     }
 });

@@ -55,5 +55,15 @@ span:hover {
 .visited{
     font-weight: bold;
 }
-
+.delete-button{
+    display: inline;
+    float: right;
+    background-color: darkgrey;
+    color: black;
+    border: 1px solid black;
+    cursor: pointer;    
+}
+.delete-button:hover{
+    background-color: crimson;
+}
 

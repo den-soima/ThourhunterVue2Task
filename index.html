@@ -38,7 +38,7 @@
     <div id="list">
         <ul>
             <li v-for="marker in listOfMarkers" :key="marker.id">
-                {{marker}}
+                m : ({{marker}})
                 <span v-on:click="deleteMarker(marker)" class="delete-button">Delete</span>
             </li>
         </ul>
