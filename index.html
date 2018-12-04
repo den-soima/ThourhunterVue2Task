@@ -10,21 +10,22 @@
 </head>
 <body>
 <div id="header">
-    <h2>TourHunter task :</h2>
+    <h2>Tourhunter task :</h2>
 </div>
 <div id="body">
     <div id="tree">
         <ul>
-            <li v-for="branch in tree.branches" :key="branch.id">
-                <span v-on:click="pinMarker(branch)">{{branch.name}}</span>
-                <ul v-if="branch.expand">
-                    <li v-for="scion in branch.scions" :key="scion.id">
-                        <span v-on:click="pinMarker(scion)">{{scion.name}}</span>
-                        <ul v-if="scion.expand">
+            <li v-for="branch in tree.branches" :key="branch.id" v-bind:class="{selected: branch.selected}">
+                <span v-on:click="pinMarkers(branch)">{{branch.name}}</span>
+                <ul>
+                    <li v-for="scion in branch.scions" :key="scion.id" v-bind:class="{selected: scion.selected}">
+                        <span v-on:click="pinMarkers(scion)">{{scion.name}}</span>
+                        <ul>
                             <li v-for="leaf in scion.scions" :key="leaf.id">
-                                <span v-on:click="pinMarker(leaf)" 
-                                      v-bind:class="{selected: leaf.selected, 'visited' : leaf.visited && !leaf.selected}">{{leaf
-                                    .name}}</span>
+                                <span v-on:click="pinMarkers(leaf)"
+                                      v-bind:class="{selected: leaf.selected, 'visited' : leaf.visited && !leaf.selected}">
+                                    {{leaf.name}}: {{leaf.marker.name}} <i v-if="leaf.visited">&#8701</i>
+                                    </span>
                             </li>
                         </ul>
                     </li>
@@ -32,13 +33,13 @@
             </li>
         </ul>
     </div>
-    <div id="map">        
+    <div id="map">
         <div id="leaflet"></div>
     </div>
     <div id="list">
         <ul>
-            <li v-for="marker in listOfMarkers" :key="marker.id">
-                m : ({{marker}})
+            <li v-for="marker in markers" :key="marker.id">
+                {{marker.name}}
                 <span v-on:click="deleteMarker(marker)" class="delete-button">Delete</span>
             </li>
         </ul>

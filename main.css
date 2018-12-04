@@ -25,7 +25,8 @@ span {
     display: block;
 }
 span:hover {
-    background-color: mediumspringgreen;
+    color: orange;
+    cursor: pointer;
 }
 
 #map {
@@ -34,6 +35,10 @@ span:hover {
 
 #list {
     width: 300px;
+   
+}
+#list ul li{
+    padding-bottom: 5px;
 }
 
 #leaflet {
@@ -48,22 +53,29 @@ span:hover {
 }
 
 .selected{
-    background-color: lightblue;
     font-weight: bold;
 }
 
 .visited{
-    font-weight: bold;
+    
 }
+
+
+
 .delete-button{
     display: inline;
     float: right;
-    background-color: darkgrey;
+    margin-left: 10px;
+    margin-right: 40px;
+    padding: 0px 10px;
+    background-color: ghostwhite;
     color: black;
     border: 1px solid black;
-    cursor: pointer;    
+    border-radius: 2px;
+    cursor: pointer;   
 }
 .delete-button:hover{
-    background-color: crimson;
+    background-color: red;
+    color: black;
 }
 
