@@ -29,10 +29,6 @@ span:hover {
     cursor: pointer;
 }
 
-#map {
-
-}
-
 #list {
     width: 300px;
    
@@ -55,12 +51,6 @@ span:hover {
 .selected{
     font-weight: bold;
 }
-
-.visited{
-    
-}
-
-
 
 .delete-button{
     display: inline;
